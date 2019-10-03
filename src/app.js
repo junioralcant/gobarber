@@ -1,6 +1,8 @@
 const express = require("express");
 const routes = require("./routes");
 
+require("./databese"); // importa a conexão com bd,
+
 class App {
   constructor() {
     this.server = express();
@@ -10,11 +12,11 @@ class App {
   }
 
   middlewares() {
-    this.server.use(express.json());
+    this.server.use(express.json()); // informa que ira retornar dados em json
   }
 
   routes() {
-    this.server.use(routes);
+    this.server.use(routes); // importa as rotas
   }
 }
 
