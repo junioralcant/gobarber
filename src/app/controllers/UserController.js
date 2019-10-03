@@ -12,13 +12,13 @@ class UserController {
 
     console.log(req.body);
 
-    const { id, name, email, password_hash } = await User.create(req.body); //retorna só os dados informados, poderia retornar todos os dados do bd atribuindo eles a uma variável
+    const { id, name, email, provider } = await User.create(req.body); //retorna só os dados informados, poderia retornar todos os dados do bd atribuindo eles a uma variável
 
     return res.json({
       id,
       name,
       email,
-      password_hash
+      provider
     });
   }
 }
