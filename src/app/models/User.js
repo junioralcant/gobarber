@@ -26,6 +26,11 @@ class User extends Model {
     return this;
   }
 
+  // associa o id da imagem no campo avatar_id
+  static associate(models) {
+    this.belongsTo(models.File, { foreignKey: "avatar_id" });
+  }
+
   checkPassword(password) {
     // compara a senha informada com a do bd
     return bcrypt.compare(password, this.password_hash);
