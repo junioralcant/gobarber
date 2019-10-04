@@ -1,9 +1,23 @@
 const jwt = require("jsonwebtoken");
+const { object } = require("yup");
+const { string } = require("yup");
+
 const User = require("../models/User");
 const authConfig = require("../../config/auth");
 
 class SessionController {
   async store(req, res) {
+    //validação
+    const schema = object().shape({
+      email: string()
+        .email()
+        .required(),
+      password: string().required()
+    });
+
+    if (!(await schema.isValid(req.body))) {
+      return res.status(400).json({ error: "Validação falhou" });
+    }
     const { email, password } = req.body;
 
     const user = await User.findOne({ where: { email } });
