@@ -1,6 +1,7 @@
-const { object } = require("yup");
-const { number } = require("yup");
-const yup = require("yup");
+const Yup = require("yup");
+const { startOfHour } = require("date-fns");
+const { parseISO } = require("date-fns");
+const { isBefore } = require("date-fns");
 
 const User = require("../models/User");
 const Appointment = require("../models/Appointment");
@@ -8,9 +9,9 @@ const Appointment = require("../models/Appointment");
 class AppointmentController {
   async store(req, res) {
     //validação
-    const schema = yup.object().shape({
-      provider_id: yup.number().required(),
-      date: yup.date().required()
+    const schema = Yup.object().shape({
+      provider_id: Yup.number().required(),
+      date: Yup.date().required()
     });
 
     if (!(await schema.isValid(req.body))) {
@@ -28,6 +29,30 @@ class AppointmentController {
       return res.status(401).json({
         error: "Você só pode criar agendamento com um provedor"
       });
+    }
+
+    const hourStart = startOfHour(parseISO(date));
+
+    // verifica se a data informada é menor que a do dia atual
+    if (isBefore(hourStart, new Date())) {
+      return res
+        .status(400)
+        .json({ error: "Datas passadas não são permitidas" });
+    }
+
+    // checa se há algum agendamento na quele mesmo horário
+    const checekAvailability = await Appointment.findOne({
+      where: {
+        provider_id,
+        canceled_at: null,
+        date: hourStart
+      }
+    });
+
+    if (checekAvailability) {
+      return res
+        .status(400)
+        .json({ error: "Já existe um agendamento para esse mesmo horário" });
     }
 
     const appointment = await Appointment.create({
