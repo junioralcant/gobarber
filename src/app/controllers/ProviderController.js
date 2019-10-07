@@ -12,7 +12,7 @@ class ProviderController {
           attributes: ["name", "path", "url"]
         }
       ] // retorna os dados do avatar
-    });
+    }); 
 
     return res.json(providers);
   }
