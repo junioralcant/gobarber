@@ -9,6 +9,8 @@ const File = require("../models/File");
 
 class AppointmentController {
   async index(req, res) {
+    const { page = 1 } = req.query;
+
     const appointments = await Appointment.findAll({
       where: {
         user_id: req.userId,
@@ -16,6 +18,8 @@ class AppointmentController {
       },
       order: ["date"], // ordena a listagem por data
       attributes: ["id", "date"],
+      limit: 20, // limite de registro por página
+      offset: (page - 1) * 20, // para ir para a próxima página
       include: [
         // listagem dos relacionamentos
         {
