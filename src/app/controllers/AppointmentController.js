@@ -5,8 +5,37 @@ const { isBefore } = require("date-fns");
 
 const User = require("../models/User");
 const Appointment = require("../models/Appointment");
+const File = require("../models/File");
 
 class AppointmentController {
+  async index(req, res) {
+    const appointments = await Appointment.findAll({
+      where: {
+        user_id: req.userId,
+        canceled_at: null
+      },
+      order: ["date"], // ordena a listagem por data
+      attributes: ["id", "date"],
+      include: [
+        // listagem dos relacionamentos
+        {
+          model: User, // mostra os dados do provedor
+          as: "provider",
+          attributes: ["id", "name"],
+          include: [
+            {
+              model: File, // mostra os dados do avatar
+              as: "avatar",
+              attributes: ["id", "path", "url"]
+            }
+          ]
+        }
+      ]
+    });
+
+    return res.json(appointments);
+  }
+
   async store(req, res) {
     //validação
     const schema = Yup.object().shape({
