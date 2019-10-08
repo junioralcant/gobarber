@@ -67,6 +67,13 @@ class AppointmentController {
       });
     }
 
+    // verificação para não permitir que o provedor marque agendamendo com ele mesmo
+    if (provider_id == req.userId) {
+      return res.status(400).json({
+        error: "O provedor não pode marcar um agendamento consigo mesmo"
+      });
+    }
+
     const hourStart = startOfHour(parseISO(date));
 
     // verifica se a data informada é menor que a do dia atual
