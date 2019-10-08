@@ -2,10 +2,13 @@ const Yup = require("yup");
 const { startOfHour } = require("date-fns");
 const { parseISO } = require("date-fns");
 const { isBefore } = require("date-fns");
+const { format } = require("date-fns");
+const pt = require("date-fns/locale/pt");
 
 const User = require("../models/User");
 const Appointment = require("../models/Appointment");
 const File = require("../models/File");
+const Notification = require("../Schema/Notification");
 
 class AppointmentController {
   async index(req, res) {
@@ -92,6 +95,20 @@ class AppointmentController {
       user_id: req.userId,
       provider_id,
       date
+    });
+
+    // Notifica prestador de serviço se a um novo agendamento
+    const user = await User.findByPk(req.userId); // recupera o usuário logado
+    const formatedDate = format(
+      // formatando a data
+      hourStart,
+      "'dia' dd 'de' MMMM', às' H:mm'h'", // dia 08 de outubro, às 13:00h
+      { locale: pt }
+    );
+
+    await Notification.create({
+      content: `Novo agendamento de ${user.name} para ${formatedDate} `,
+      user: provider_id
     });
 
     return res.json(appointment);
