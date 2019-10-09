@@ -3,6 +3,7 @@ const { startOfHour } = require("date-fns");
 const { parseISO } = require("date-fns");
 const { isBefore } = require("date-fns");
 const { format } = require("date-fns");
+const { subHours } = require("date-fns");
 const pt = require("date-fns/locale/pt");
 
 const User = require("../models/User");
@@ -117,6 +118,35 @@ class AppointmentController {
       content: `Novo agendamento de ${user.name} para ${formatedDate} `,
       user: provider_id
     });
+
+    return res.json(appointment);
+  }
+
+  // Cancela o agendamento
+  async delete(req, res) {
+    const appointment = await Appointment.findByPk(req.params.id);
+
+    if (appointment.user_id !== req.userId) {
+      return res.status(401).json({
+        error: "Voçê não tem permissão para cancelar o agendamento."
+      });
+    }
+
+    // remove 2 horas do horário do agendamento, agendamento só pode ser cancelado com no máximo 2 horas antes
+    const dateWithSub = subHours(appointment.date, 2);
+
+    //verifica se a data do cancelamento é antes da data atual
+    if (isBefore(dateWithSub, new Date())) {
+      return res
+        .status(401)
+        .json(
+          "Voçê só pode cancelar o agendamento com no máximo 2 horas antes."
+        );
+    }
+
+    appointment.canceled_at = new Date();
+
+    await appointment.save();
 
     return res.json(appointment);
   }
