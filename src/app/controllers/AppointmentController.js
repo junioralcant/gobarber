@@ -10,7 +10,8 @@ const User = require("../models/User");
 const Appointment = require("../models/Appointment");
 const File = require("../models/File");
 const Notification = require("../Schema/Notification");
-const Mail = require("../../lib/Mail");
+const Queue = require("../../lib/Queue");
+const ConcellationMail = require("../jobs/CancellationMail");
 
 class AppointmentController {
   async index(req, res) {
@@ -163,21 +164,9 @@ class AppointmentController {
 
     await appointment.save();
 
-    await Mail.sedMail({
-      to: `${appointment.provider.name} <${appointment.provider.email}>`,
-      subject: "Agendamento cancelado",
-      template: "cancellation", // nome do tamplate
-      context: {
-        // variáveis que seram eviadas para o tamplate
-        provider: appointment.provider.name,
-        user: appointment.user.name,
-        date: format(
-          // formatando a data
-          appointment.date,
-          "'dia' dd 'de' MMMM', às' H:mm'h'", // dia 08 de outubro, às 13:00h
-          { locale: pt }
-        )
-      }
+    // add os dados na fila de cancelamento de email
+    await Queue.add(ConcellationMail.key, {
+      appointment
     });
 
     return res.json(appointment);
