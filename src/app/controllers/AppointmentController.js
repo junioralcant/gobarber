@@ -23,7 +23,7 @@ class AppointmentController {
         canceled_at: null
       },
       order: ["date"], // ordena a listagem por data
-      attributes: ["id", "date"],
+      attributes: ["id", "date", "past", "cancelable"],
       limit: 20, // limite de registro por página
       offset: (page - 1) * 20, // para ir para a próxima página
       include: [
